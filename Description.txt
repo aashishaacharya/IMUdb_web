@@ -1,0 +1,35 @@
+To do:
+
+What are we planning to store?
+-Site details, just text fields includes location, configuration,power,transmission,landlord details, NEA details
+-Few site images 3-4 per site and not more
+
+-Transmission device details (Routers and switches), just a table with some ips and port configuration, rx power, nothing fancy
+-Optical fiber data (Also a table or two depending upon what it connects to), also corewise mapping will be done 
+-Optical fiber route (will be done in kml/kmz format supported by maps softwares, also js leaflet framework supports it)
+
+
+How do we plan to manage the data?
+-Admin/users are created. Admin can create users, login with google will be okay, this may prevent us hassle of encryption and hashing.
+-Admin user can create users, also accept and reject the suggested edit. Also, decide if the change should be sent as notification to all users or not.
+-First we will populate manually all the data. After that, we have outsourced manpower who goes to the site every 3 months at least, he will update some details if anything changed and suggests the edit. (or we can allow them to make the edit and send notification to all users, this can be discussed).
+-Web view will allow bulk downloading and exporting/importing data in certain csv/xlsx format.
+-Will be better if we have map view (it will be same as mobile one because in mobile also map will be done using js webview)
+
+What features in mobile app?
+-Mobile app will have view and update interfaces. Site can be added by the admin only.
+-Allows uploading images or directly clicking images.
+-Also, notifications of the selected updates.
+-Map view to see the fiber route(this we will make to include joint points and other , can be easily done with different color pointers)
+-Allow changes in the kml/kmz or add/remove some points from the app.
+-A page to add points  by selecting on map/or live location, Then we will have option to decide if this point is part of any route, or splice, break points. Allow adding images as optional.
+
+
+What do i think we should do?
+-Backend with some relational database and image storages.
+-Relational because it will help bulk download and also the data are actually related. For eg, site uplink relates to fiber data and that relates to router data as well. So, i think relational makes sense.
+-Front end can be better with flutter , webview can work but flutter can be more lightweight and goodlooking I feel.
+-We can ask for backend hosting after we test it in our local or some hosting servers if there will be need for additional resources.
+
+
+
