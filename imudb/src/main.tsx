@@ -1,13 +1,13 @@
-// src/main.tsx
+// src/main.tsx (Ensure AuthProvider wraps App)
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
-import './index.css' // Your main CSS with Tailwind imports
-import { AuthProvider } from './contexts/AuthContext.tsx' // Import the provider
+import { AuthProvider } from './contexts/AuthContext.tsx'
+import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider> {/* Wrap App with AuthProvider */}
+    <AuthProvider>
       <App />
     </AuthProvider>
   </React.StrictMode>,

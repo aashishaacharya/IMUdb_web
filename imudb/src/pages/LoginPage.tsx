@@ -1,34 +1,108 @@
 // src/pages/LoginPage.tsx
-import React from 'react';
-import { supabase } from '../lib/supabaseClient'; // Import your configured client
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import '../styles/LoginPage.css';
 
 const LoginPage: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = 'Login Page';
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get('username') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: username,
+        password,
+      });
+
+      if (error) {
+        setError(error.message);
+      } else {
+        window.location.href = '/home';
+      }
+    } catch (err) {
+      setError('An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      // Optional: Add options like redirectTo if needed
-      // options: {
-      //   redirectTo: window.location.origin // Redirect back after login
-      // }
-    });
-    if (error) {
-      console.error('Error logging in with Google:', error.message);
-      // Handle error display to user
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+
+      if (error) {
+        setError(error.message);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="p-8 border rounded shadow-lg">
-        <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
-        <button
-          onClick={handleGoogleLogin}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-        >
-          Login with Google
-        </button>
-        {/* You might add other login methods here later */}
+    <div className="login-container">
+      <div className="left-panel">
+        <img src="/src/assets/nt_logo.png" alt="Nepal Telecom Logo" className="logo-img" />
+        <h1>Nepal Telecom</h1>
+        <p>Welcome to IMU Birgunj</p>
+      </div>
+
+      <div className="right-panel">
+        <div className="login-form">
+          <h2>Login</h2>
+          {error && <p className="error-message">{error}</p>}
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
+              <label htmlFor="username">Email</label>
+              <input type="email" id="username" name="username" required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input type="password" id="password" name="password" required />
+            </div>
+            <button type="submit" className="login-button" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+
+          <button
+            type="button"
+            className="google-login-button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+          >
+            <div className="google-btn-content">
+              <img
+                src="https://placehold.co/20x20/white/black?text=G"
+                alt="Google Logo"
+                className="google-logo"
+              />
+              {loading ? 'Logging in...' : 'Login with Google'}
+            </div>
+          </button>
+
+          <div className="forgot-password">
+            <a href="#">Forgot Password?</a>
+          </div>
+        </div>
       </div>
     </div>
   );

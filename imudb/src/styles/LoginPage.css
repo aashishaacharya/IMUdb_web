@@ -1,0 +1,187 @@
+/* Import Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+body {
+  margin: 0; /* Ensure no default body margin */
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0; /* Optional: light background */
+  padding: 20px; /* Add some padding around the container on larger screens */
+  box-sizing: border-box; /* Include padding in element's total width */
+}
+
+.login-container {
+  display: flex;
+  width: 90%; /* Increased width slightly */
+  max-width: 1000px; /* Increased max-width */
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden; /* Ensures rounded corners on children */
+  flex-direction: row; /* Default to row layout for larger screens */
+}
+
+.left-panel {
+  flex: 1; /* Left panel takes 1 part of available space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background-color: #007bff; /* Updated: Blue color */
+  color: white;
+  text-align: center;
+}
+
+.logo-img {
+  max-width: 150px; /* Adjust logo size */
+  margin-bottom: 20px;
+}
+
+/* Added rule to increase font size for the paragraph in the left panel */
+.left-panel p {
+  font-size: 1.1rem; /* Slightly increased font size */
+}
+
+
+.right-panel {
+  flex: 1.5; /* Right panel takes 1.5 parts of available space, making it wider */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
+}
+
+.login-form h2 {
+  margin-top: 0;
+  margin-bottom: 30px;
+  text-align: center;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="email"]
+{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+.login-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff; /* Updated: Blue color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  margin-bottom: 1rem; /* Added margin-bottom */
+}
+
+.login-button:hover {
+  background-color: #0056b3; /* Updated: Darker blue on hover */
+}
+
+.google-login-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #fff;
+    color: #4a4a4a; /* Dark gray text */
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-bottom: 1rem; /* Added margin-bottom */
+}
+
+.google-login-button:hover {
+    background-color: #f0f0f0; /* Light gray on hover */
+}
+
+.google-btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.google-logo {
+    width: 20px; /* Set logo size */
+    height: 20px; /* Set logo size */
+    margin-right: 8px; /* Space between logo and text */
+}
+
+
+.forgot-password {
+    text-align: center;
+    margin-top: 1rem; /* Added margin-top */
+}
+
+.forgot-password a {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 0.875rem; /* text-sm equivalent */
+    color: #007bff; /* Blue color */
+    text-decoration: none; /* Remove underline */
+    transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+    color: #0056b3; /* Darker blue on hover */
+    text-decoration: underline; /* Add underline on hover */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  body {
+    padding: 0; /* Remove body padding on small screens */
+  }
+
+  .login-container {
+    flex-direction: column; /* Stack panels vertically */
+    width: 100%; /* Make container full width */
+    border-radius: 0; /* Remove border radius on small screens */
+    box-shadow: none; /* Remove shadow on small screens */
+  }
+
+  .left-panel,
+  .right-panel {
+    flex: none; /* Remove flex grow on smaller screens */
+    width: 100%;
+    padding: 20px; /* Adjust padding */
+  }
+
+  .left-panel {
+    padding-bottom: 10px; /* Reduce padding between logo/text and form */
+  }
+
+  .logo-img {
+    max-width: 100px;
+  }
+
+  /* Input fields should scale correctly due to width: 100% and box-sizing: border-box */
+  /* and the padding on the right-panel */
+}
