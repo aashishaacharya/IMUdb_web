@@ -1,24 +1,15 @@
 // src/pages/LoginPage.tsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/LoginPage.css';
 
 const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const UNREGISTERED_EMAIL_MESSAGE = "Please contact an administrator to create your credentials or reset them.";
 
   useEffect(() => {
-    document.title = 'IMU Birgunj Login Page';
-    if (location.state?.message) {
-      setError(location.state.message as string);
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location, navigate]);
+    document.title = 'Login Page';
+  }, []);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,31 +28,9 @@ const LoginPage: React.FC = () => {
 
       if (error) {
         setError(error.message);
-        return;
+      } else {
+        window.location.href = '/home';
       }
-
-      // Get the session after password login
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        setError('Failed to get session');
-        return;
-      }
-
-      // Check if user exists in user_profiles
-      const { data: userProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('email', session.user.email)
-        .single();
-
-      if (profileError || !userProfile) {
-        setError("Please contact an administrator to create your credentials or reset them.");
-        await supabase.auth.signOut();
-        return;
-      }
-
-      navigate('/home');
     } catch (err) {
       setError('An unexpected error occurred.');
     } finally {
@@ -76,20 +45,11 @@ const LoginPage: React.FC = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: window.location.origin 
-        }
       });
 
       if (error) {
         setError(error.message);
-        return;
       }
-
-      // For OAuth, Supabase handles the redirect.
-      // The AuthContext will pick up the session change.
-      // ProtectedRoute will then handle authorization.
-      
     } catch (err) {
       setError('An unexpected error occurred.');
     } finally {
@@ -108,11 +68,7 @@ const LoginPage: React.FC = () => {
       <div className="right-panel">
         <div className="login-form">
           <h2>Login</h2>
-          {error && (
-            error === UNREGISTERED_EMAIL_MESSAGE ? 
-            <p className="error-message" style={{ fontWeight: 'bold', color: 'red' }}>{error}</p> :
-            <p className="error-message">{error}</p>
-          )}
+          {error && <p className="error-message">{error}</p>}
           <form onSubmit={handleLogin}>
             <div className="form-group">
               <label htmlFor="username">Email</label>

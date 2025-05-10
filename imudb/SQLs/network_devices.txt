@@ -1,0 +1,40 @@
+create table network_devices (
+  id serial primary key,  -- internal numeric PK
+  device_id text unique,  -- human-readable auto-generated ID (e.g., CDR401_ATN_2)
+  site_id varchar(30) references site(site_id),
+  device_name text,
+  device_type text check (device_type in ('L2','L3','AGG')),
+  device_model text check (device_model in ('ATN', 'CX', 'OSN', 'DEVICE')),
+  mgmt_ip inet,
+  remarks text,
+  created_at timestamp default now()
+);
+
+
+create or replace function generate_device_id()
+returns trigger as $$
+declare
+  base_id text;
+  suffix_count int;
+begin
+  base_id := new.site_id || '_' || new.device_type;
+
+  select count(*) into suffix_count
+  from network_devices
+  where site_id = new.site_id and device_type = new.device_type;
+
+  if suffix_count = 0 then
+    new.device_id := base_id;
+  else
+    new.device_id := base_id || '_' || (suffix_count + 1);
+  end if;
+
+  return new;
+end;
+$$ language plpgsql;
+
+
+create trigger trg_generate_device_id
+before insert on network_devices
+for each row
+execute procedure generate_device_id();

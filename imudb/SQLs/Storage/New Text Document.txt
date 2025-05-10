@@ -1,0 +1,8 @@
+Supabase Storage (like AWS S3) doesn't really have traditional folders. Instead, organization is achieved using prefixes in the object's path (its name). When you upload a file with a / in its name, the UI and libraries interpret it as a folder structure.
+
+Recommended Structure: Use the unique ID of each site (site_id or location_id from your database table) as a "folder" name within your main bucket.
+
+Create a bucket named site_images (make it Private).
+When uploading an image for a site with site_id = 'abc-123', upload it with a path like: abc-123/site_photo_front.jpg
+Another image for the same site: abc-123/equipment_closeup.png
+Image for a different site (site_id = 'def-456'): def-456/overview_shot.jpg

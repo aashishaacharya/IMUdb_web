@@ -1,0 +1,38 @@
+CREATE TYPE core_status AS ENUM (
+   'Used',
+   'Faulty',
+   'Spare'
+);
+
+
+
+-- View to calculate core usage per complete route
+CREATE OR REPLACE VIEW fiber_route_usage_summary AS
+SELECT
+    fr.route_id,
+    fr.name AS route_name,
+    fr.total_core_count,
+    -- Count cores based on their status in the mapping table
+    COALESCE(COUNT(fcm.mapping_id) FILTER (WHERE fcm.status = 'Spare'), 0) AS spare_cores,
+    COALESCE(COUNT(fcm.mapping_id) FILTER (WHERE fcm.status = 'Used'), 0) AS used_cores,
+    COALESCE(COUNT(fcm.mapping_id) FILTER (WHERE fcm.status = 'Faulty'), 0) AS faulty_cores,
+    -- Calculate "used" cores as anything not 'Spare'
+    COALESCE(COUNT(fcm.mapping_id) FILTER (
+        WHERE fcm.status != 'Spare'
+    ), 0) AS total_used_cores
+FROM
+    fiber_routes fr
+LEFT JOIN
+    fiber_core_mappings fcm ON fr.route_id = fcm.route_id
+WHERE
+    -- Typically summarize for complete routes, not segments
+    fr.parent_route_id IS NULL
+GROUP BY
+    -- Group by all non-aggregated columns from fiber_routes included in the SELECT
+    fr.route_id, fr.name, fr.total_core_count;
+
+-- Example Query: Get usage summary for a specific route
+-- SELECT * FROM fiber_route_usage_summary WHERE route_id = 'your-route-uuid';
+
+-- Example Query: Get usage for all routes
+-- SELECT * FROM fiber_route_usage_summary;

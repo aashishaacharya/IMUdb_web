@@ -1,0 +1,57 @@
+All users can view: 
+(select, authenticated)
+
+USING (
+  EXISTS (
+    SELECT 1 FROM user_profiles
+    WHERE user_profiles.user_id = auth.uid()
+  )
+)
+
+
+
+
+Only admins can add:
+(Insert, authenticated)
+
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM user_profiles
+    WHERE user_profiles.user_id = auth.uid()
+    AND role = 'admin'
+  )
+)
+
+
+Only editor and admin can edit:
+(Update, authenticated)
+
+
+USING (
+  EXISTS (
+    SELECT 1 FROM user_profiles
+    WHERE user_profiles.user_id = auth.uid()
+    AND role IN ('editor', 'admin')
+  )
+)
+
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM user_profiles
+    WHERE user_profiles.user_id = auth.uid()
+    AND role IN ('editor', 'admin')
+  )
+)
+
+
+
+Only admins can delete:
+(delete, authenticated)
+
+USING (
+  EXISTS (
+    SELECT 1 FROM user_profiles
+    WHERE user_profiles.user_id = auth.uid()
+    AND role = 'admin'
+  )
+)

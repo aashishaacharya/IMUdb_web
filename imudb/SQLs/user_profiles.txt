@@ -1,0 +1,8 @@
+create table user_profiles (
+  id uuid primary key references auth.users(id),
+  name text,
+  email text, -- optional but helpful for your reference
+  role text check (role in ('admin', 'editor', 'viewer')) default 'viewer',
+  avatar_url text, -- optional if you want to store their profile image
+  created_at timestamp default now()
+);

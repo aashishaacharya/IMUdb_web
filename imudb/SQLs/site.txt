@@ -1,0 +1,89 @@
+CREATE TABLE site (
+    site_id VARCHAR(30) PRIMARY KEY, -- Custom alphanumeric ID, e.g., 'CDR001'
+    site_name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    district VARCHAR(100),
+    geom GEOMETRY(Point, 4326);
+
+    -- Landowner details
+    land_owner VARCHAR(255),
+    land_owner_contact VARCHAR(30),
+
+    -- Guard details
+    guard_present BOOLEAN, -- Binary value for Yes/No
+    guard_contact VARCHAR(30),
+
+    -- Site details
+    site_type VARCHAR(50) CHECK (site_type IN ('Indoor', 'Shelter', 'Outdoor_Cabinet')), -- Limited options
+    tower_type VARCHAR(50) CHECK (tower_type IN ('GBT', 'GBP', 'RTT')), -- Limited options
+    tower_height NUMERIC,
+
+    -- Location details
+    latitude NUMERIC(9, 6), -- Precision for latitude
+    longitude NUMERIC(9, 6),
+
+    -- Configurations for various technologies
+    config_2g VARCHAR(20) CHECK (config_2g IN ('900', '1800', '900+1800', 'NA')), -- Limited options
+    config_3g VARCHAR(20) CHECK (config_3g IN ('2100', 'NA')), -- Limited options
+    config_4g VARCHAR(20) CHECK (config_4g IN ('800', '800+1800', '1800', 'NA')), -- Limited options
+    config_5g VARCHAR(20), -- You can define further options if needed
+
+    -- Power details
+    tf VARCHAR(50) CHECK (tf IN ('NEA', 'NT', 'Solar')), -- Limited options
+    supply_phase VARCHAR(50) CHECK (supply_phase IN ('1-phase', '3-phase', 'NA')), -- Limited options
+    generator BOOLEAN, -- Binary value for Yes/No
+    battery_banks NUMERIC,
+    total_battery_capacity NUMERIC,
+    battery_installation_date DATE,
+    rectifier_capacity NUMERIC,
+    load_current NUMERIC,
+    meter_power_rating NUMERIC,
+
+    -- NEA details
+    nea_office VARCHAR(255),
+    nea_office_contact VARCHAR(30),
+    nea_field_person VARCHAR(255),
+    nea_field_contact VARCHAR(30),
+
+    -- Transmission details
+    transmission_link VARCHAR(50) CHECK (transmission_link IN ('Remote Optical', 'Optical', 'Radio', 'Optical+Radio', 'Remote Optical+Radio')), -- Limited options
+    transmission_device VARCHAR(50) CHECK (transmission_device IN ('L2', 'L3', 'NA')), -- Limited options
+    transmission_l2 VARCHAR(255),
+    transmission_l3 VARCHAR(255),
+    l3_aggregation VARCHAR(255),
+
+    -- Image paths
+    image1_path VARCHAR(255),
+    image2_path VARCHAR(255),
+    image3_path VARCHAR(255),
+
+    -- Metadata
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    created_by UUID REFERENCES user_profiles(user_id) -- Foreign key to user_profiles.id (UUID)
+
+);
+
+
+
+CREATE OR REPLACE FUNCTION update_sites_geom_from_latlon()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Check if latitude or longitude are provided and not NULL in the NEW row data
+  IF NEW.longitude IS NOT NULL AND NEW.latitude IS NOT NULL THEN
+    -- Calculate the geometry using PostGIS functions (Longitude first!)
+    NEW.geom = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
+  ELSE
+    -- If lat/lon are NULL, set geom to NULL
+    NEW.geom = NULL;
+  END IF;
+  -- Return the modified NEW row so the INSERT or UPDATE can proceed
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql; -- Specify the function language is PL/pgSQL
+
+
+EXECUTE FUNCTION update_sites_geom_from_latlon(); -- Execute the function we created
+
+
+CREATE INDEX IF NOT EXISTS idx_sites_geom ON sites USING GIST (geom);

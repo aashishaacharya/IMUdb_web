@@ -1,0 +1,22 @@
+CREATE TABLE fiber_core_mappings (
+    mapping_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    route_id UUID REFERENCES fiber_routes(route_id) ON DELETE CASCADE,
+
+    from_site_id VARCHAR(30) NOT NULL REFERENCES site(site_id),
+    from_core_no INT NOT NULL,
+
+    to_site_id VARCHAR(30) NOT NULL REFERENCES site(site_id),
+    to_core_no INT NOT NULL,
+
+    status TEXT NOT NULL CHECK (status IN ('Used', 'Faulty', 'Spare')),
+    fault_distance_km FLOAT,         -- Distance from `from_site_id` (canonical A)
+    remarks TEXT,
+    updated_at TIMESTAMPTZ DEFAULT now(),
+
+    -- ✅ Enforce uniqueness on route and core pairing regardless of A-B or B-A
+    CONSTRAINT chk_from_to_order CHECK (from_site_id < to_site_id),
+
+    -- ✅ Prevent duplicate core mapping (only one direction allowed)
+    UNIQUE (route_id, from_site_id, from_core_no, to_site_id, to_core_no)
+);

@@ -1,0 +1,11 @@
+create table device_ports (
+  id serial primary key,
+  device_id text references network_devices(device_id) on delete cascade,
+  port_name text not null,                  -- e.g., "GE0/0/1"
+  port_description text,                    -- Description of port and connection
+  tx_core_no int,                           -- Transmit core (ODF core number)
+  rx_core_no int,                           -- Receive core (ODF core number)
+  rx_power float,                           -- RX level in dBm
+  fiber_distance_km float,                  -- Distance in km
+  remarks text
+);

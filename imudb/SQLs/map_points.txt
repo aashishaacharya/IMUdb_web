@@ -1,0 +1,92 @@
+-- 1. Create the ENUM type
+CREATE TYPE map_point_type AS ENUM (
+    'Site',    -- Start/end or pass-through site
+    'Splice',  -- Fiber splice point
+    'HH',      -- Handhole / Manhole
+    'Pole',
+    'Marker'   -- General marker
+);
+
+-- 2. Create the map_points table
+CREATE TABLE map_points (
+    point_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Latitude & Longitude for easier inserts
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+
+    -- Geometry for map visualization (auto-filled from lat/lon)
+    geom GEOMETRY(Point, 4326),
+
+    -- Type of this point (splices, sites, poles, etc.)
+    point_type map_point_type NOT NULL,
+
+    -- Link to fiber route (can be null for freestanding points)
+    route_id UUID REFERENCES fiber_routes(route_id) ON DELETE CASCADE,
+
+    -- Site reference if applicable
+    site_id VARCHAR(30) REFERENCES site(site_id) ON DELETE SET NULL,
+
+    -- Optional metadata
+    description TEXT,
+    image_url TEXT,
+
+    -- Start and end site references for measurement context (auto-populated)
+    location_a_site_id VARCHAR(30) REFERENCES site(site_id) ON DELETE SET NULL,
+    location_b_site_id VARCHAR(30) REFERENCES site(site_id) ON DELETE SET NULL,
+
+    distance_from_a_km NUMERIC(10, 2),
+    distance_from_b_km NUMERIC(10, 2),
+
+    -- Audit fields
+    created_by UUID REFERENCES user_profiles(user_id),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+
+    -- Constraints
+    CONSTRAINT check_site_id_if_type_site CHECK (
+        (point_type <> 'Site') OR (point_type = 'Site' AND site_id IS NOT NULL)
+    )
+);
+
+-- 3. Indexes
+CREATE INDEX idx_map_points_geom ON map_points USING GIST (geom);
+CREATE INDEX idx_map_points_route_id ON map_points (route_id);
+CREATE INDEX idx_map_points_site_id ON map_points (site_id);
+CREATE INDEX idx_map_points_type ON map_points (point_type);
+
+-- 4. Trigger function: populate location_a_site_id and location_b_site_id
+CREATE OR REPLACE FUNCTION populate_route_sites()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.route_id IS NOT NULL THEN
+    SELECT start_site_id, end_site_id
+    INTO NEW.location_a_site_id, NEW.location_b_site_id
+    FROM fiber_routes
+    WHERE route_id = NEW.route_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 5. Trigger function: populate geom from lat/lon
+CREATE OR REPLACE FUNCTION populate_geom_from_latlon()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.geom IS NULL AND NEW.latitude IS NOT NULL AND NEW.longitude IS NOT NULL THEN
+    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 6. Triggers
+CREATE TRIGGER trg_set_route_sites
+BEFORE INSERT OR UPDATE ON map_points
+FOR EACH ROW
+EXECUTE FUNCTION populate_route_sites();
+
+CREATE TRIGGER trg_set_geom_from_latlon
+BEFORE INSERT OR UPDATE ON map_points
+FOR EACH ROW
+EXECUTE FUNCTION populate_geom_from_latlon();
