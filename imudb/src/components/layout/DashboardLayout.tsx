@@ -24,6 +24,12 @@ const menuItems: MenuItem[] = [
     roles: ['admin', 'editor', 'viewer']
   },
   {
+    label: 'Site Map',
+    path: '/site-map',
+    icon: '🗺️',
+    roles: ['admin', 'editor', 'viewer']
+  },
+  {
     label: 'User Management',
     path: '/users',
     icon: '👥',

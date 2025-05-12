@@ -1,14 +1,19 @@
 /* Nepal Telecom Blue Theme */
 :root {
-  --nt-primary: #007bff;
-  --nt-primary-dark: #0056b3;
+  --nt-primary: #0056b3;      /* Nepal Telecom primary blue */
+  --nt-primary-light: #007bff; /* Lighter blue */
+  --nt-primary-dark: #003d7f;  /* Darker blue */
   --nt-secondary: #2c3e50;
   --nt-secondary-dark: #1a252f;
-  --nt-accent: #00a0e9;
+  --nt-accent: #00a0e9;        /* Accent blue */
   --nt-text-light: #ffffff;
   --nt-text-dark: #333333;
   --nt-background: #f4f7f6;
-  --nt-sidebar-width: 240px;
+  --nt-sidebar-width: 260px;
+  --nt-content-padding: 20px;  /* Reduced padding */
+  --nt-topbar-padding-vertical: 10px;
+  --nt-sidebar-padding-top: 10px;
+  --nt-topbar-height: 60px;    /* Define topbar height for calculations */
 }
 
 /* Basic Reset & Body Styling */
@@ -23,67 +28,74 @@ body {
   line-height: 1.6;
   color: var(--nt-text-dark);
   background-color: var(--nt-background);
+  overflow-x: hidden;
 }
 
 .app-container {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 }
 
 /* Sidebar Styling */
 .sidebar {
-  width: var(--nt-sidebar-width);
-  background-color: var(--nt-secondary);
-  color: var(--nt-text-light);
-  padding-top: 20px;
-  flex-shrink: 0;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  width: 240px;
+  background-color: var(--nt-primary-dark);
+  color: white;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
 }
 
 .sidebar-header {
+  padding: 20px 15px;
   text-align: center;
-  padding: 0 20px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-header .logo-img {
-  width: 80px;
+  width: 60px;
   height: auto;
   margin-bottom: 10px;
 }
 
 .sidebar-header h2 {
-  color: var(--nt-text-light);
-  font-size: 1.2em;
+  font-size: 1.2rem;
+  margin: 0;
 }
 
 .sidebar ul {
   list-style: none;
-  padding: 20px 0;
+  padding: 0;
+  margin: 0;
 }
 
 .sidebar ul li {
-  margin-bottom: 5px;
+  margin: 2px 0;
 }
 
 .sidebar ul li a {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
-  color: var(--nt-text-light);
+  padding: 10px 15px;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
 }
 
-.sidebar ul li a:hover,
-.sidebar ul li.active a {
-  background-color: var(--nt-secondary-dark);
-  color: var(--nt-text-light);
+.sidebar ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .menu-icon {
   margin-right: 10px;
-  font-size: 1.2em;
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
 }
 
 /* Main Content Area Styling */
@@ -92,22 +104,34 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--nt-background);
+  position: relative;
+  margin-left: var(--nt-sidebar-width);
+  width: calc(100% - var(--nt-sidebar-width));
+  min-height: 100vh;
+  padding-top: var(--nt-topbar-height); /* Add top padding to account for fixed topbar */
 }
 
 /* Top Bar Styling */
 .top-bar {
   background-color: var(--nt-text-light);
-  padding: 15px 30px;
+  padding: var(--nt-topbar-padding-vertical) var(--nt-content-padding);
   border-bottom: 1px solid #ddd;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  position: fixed;  /* Changed to fixed */
+  top: 0;           /* Position at top */
+  left: var(--nt-sidebar-width); /* Position after sidebar */
+  width: calc(100% - var(--nt-sidebar-width)); /* Calculate width */
+  height: var(--nt-topbar-height); /* Set defined height */
+  z-index: 15;
 }
 
 .top-bar h1 {
   font-size: 1.5em;
-  color: var(--nt-text-dark);
+  color: var(--nt-primary-dark);
+  font-weight: 600;
 }
 
 .user-info {
@@ -119,20 +143,59 @@ body {
 .user-info span {
   background-color: var(--nt-primary);
   color: var(--nt-text-light);
-  padding: 5px 10px;
-  border-radius: 15px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-size: 0.9em;
   text-transform: capitalize;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 /* Dashboard Content Area */
 .dashboard-content {
-  padding: 30px;
   flex-grow: 1;
   overflow-y: auto;
+  padding: var(--nt-content-padding);
+  width: 100%;
+  max-width: 1600px; /* Increased from 1400px to make content larger */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Responsive Design */
+@media (max-width: 1800px) {
+  .dashboard-content {
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+  }
+  
+  .main-content {
+    margin-left: 220px;
+    width: calc(100% - 220px);
+  }
+  
+  .top-bar {
+    left: 220px;
+    width: calc(100% - 220px);
+  }
+  
+  .sidebar-header h2 {
+    font-size: 1.2em;
+  }
+
+  .dashboard-content {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 15px;
+  }
+}
+
 @media (max-width: 768px) {
   .app-container {
     flex-direction: column;
@@ -141,14 +204,26 @@ body {
   .sidebar {
     width: 100%;
     height: auto;
-    padding-bottom: 10px;
+    position: relative;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding-top: 0;
+  }
+  
+  .top-bar {
+    position: relative;
+    left: 0;
+    width: 100%;
   }
 
   .sidebar ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px;
+    gap: 8px;
+    padding: 12px;
   }
 
   .sidebar ul li {
@@ -158,11 +233,17 @@ body {
   .sidebar ul li a {
     padding: 8px 15px;
     border-radius: 20px;
-    background-color: var(--nt-secondary-dark);
+    border-left: none;
+    background-color: var(--nt-primary);
+    justify-content: center;
+  }
+
+  .menu-icon {
+    margin-right: 6px;
   }
 
   .top-bar {
-    padding: 10px 15px;
+    padding: 12px 15px;
   }
 
   .top-bar h1 {
@@ -170,6 +251,9 @@ body {
   }
 
   .dashboard-content {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
     padding: 15px;
   }
 } 
