@@ -63,24 +63,30 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('[LoginPage] Initiating Google OAuth login...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin 
+          redirectTo: `${window.location.origin}/loading-session`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         }
       });
 
       if (error) {
+        console.error('[LoginPage] Google OAuth error:', error);
         setError(error.message);
         return;
       }
 
-      // For OAuth, Supabase handles the redirect.
-      // The AuthContext will pick up the session change.
-      // ProtectedRoute will then handle authorization.
+      console.log('[LoginPage] Google OAuth initiated successfully:', data);
+      // The redirect will be handled by Supabase
       
     } catch (err) {
-      setError('An unexpected error occurred.');
+      console.error('[LoginPage] Unexpected error during Google login:', err);
+      setError('An unexpected error occurred during Google login.');
     } finally {
       setLoading(false);
     }
