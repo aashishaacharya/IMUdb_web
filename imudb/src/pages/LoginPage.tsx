@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/LoginPage.css';
+import { AUTH_ERRORS } from '../lib/errorMessages';
 
 const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -41,27 +42,15 @@ const LoginPage: React.FC = () => {
       }
 
       // Get the session after password login
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError || !session) {
-        setError('Failed to get session');
-        return;
-      }
+      // if (sessionError || !session) {
+      //   setError('Failed to get session');
+      //   return;
+      // }
 
-      // Check if user exists in user_profiles
-      const { data: userProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('email', session.user.email)
-        .single();
-
-      if (profileError || !userProfile) {
-        setError("Please contact an administrator to create your credentials or reset them.");
-        await supabase.auth.signOut();
-        return;
-      }
-
-      navigate('/home');
+      // Navigate to a loading page or home, AuthContext will handle profile loading
+      navigate('/loading-session', { replace: true });
     } catch (err) {
       setError('An unexpected error occurred.');
     } finally {
