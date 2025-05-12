@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Site Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Site Admin</h2>
+            </div>
+            <ul>
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="#">Site Management</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Pending Edits</a></li>
+                <li><a href="#">Optical Data</a></li>
+                <li><a href="#">Bulk Export</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Admin Dashboard</h1>
+                <div class="user-info">
+                    <span>Welcome, Admin User</span>
+                    </div>
+            </header>
+
+            <section class="dashboard-widgets">
+
+                <div class="widget-row">
+                    <div class="widget kpi-widget warning">
+                        <h3>Pending Edits</h3>
+                        <p class="kpi-number">15</p>
+                        <p>Suggestions need review</p>
+                        <a href="#" class="button">Review Now</a>
+                    </div>
+                    <div class="widget kpi-widget">
+                        <h3>Managed Sites</h3>
+                        <p class="kpi-number">1,234</p>
+                        <p>Total sites in system</p>
+                        <a href="#" class="link">View All Sites &rarr;</a>
+                    </div>
+                    <div class="widget kpi-widget">
+                        <h3>Active Users</h3>
+                        <p class="kpi-number">56</p>
+                        <p>Registered users</p>
+                        <a href="#" class="link">Manage Users &rarr;</a>
+                    </div>
+                    <div class="widget kpi-widget">
+                        <h3>Data Health</h3>
+                        <p class="kpi-number">98%</p>
+                        <p>Critical data complete</p>
+                        <a href="#" class="link">View Report &rarr;</a>
+                    </div>
+                </div>
+
+                <div class="widget-row">
+                    <div class="widget activity-widget">
+                        <h3>Recent Activity</h3>
+                        <ul>
+                            <li><span>[2025-03-30 01:45]</span> - User 'Tech A' suggested edit for 'SITE-0101'.</li>
+                            <li><span>[2025-03-30 01:30]</span> - Admin 'Admin' approved edit for 'SITE-0098'.</li>
+                            <li><span>[2025-03-29 18:00]</span> - New Site 'SITE-1235' added by 'Admin'.</li>
+                            <li><span>[2025-03-29 17:55]</span> - User 'Huawei PM' logged in.</li>
+                            <li><span>[2025-03-29 15:20]</span> - Admin 'Admin' rejected edit for 'SITE-0100'.</li>
+                            <li><span>[2025-03-29 11:10]</span> - User 'Field Ops B' downloaded bulk data.</li>
+                        </ul>
+                        <a href="#" class="link">View Full Audit Log &rarr;</a>
+                    </div>
+
+                    <div class="widget quick-actions-widget">
+                        <h3>Quick Actions</h3>
+                        <button class="button action-button">+ Add New Site</button>
+                        <button class="button action-button">Manage Users</button>
+                        <button class="button action-button">Review Pending Edits</button>
+                        <button class="button action-button">Manage Optical Data</button>
+                        <button class="button action-button">Configure Bulk Export</button>
+                    </div>
+                </div>
+
+                 <div class="widget-row">
+                     <div class="widget map-widget">
+                        <h3>Site Map Overview</h3>
+                        <div class="map-placeholder">
+                           (Interactive Map Placeholder - Requires JavaScript library like Leaflet/Mapbox and real data)
+                        </div>
+                    </div>
+                 </div>
+
+            </section>
+        </main>
+    </div>
+</body>
+</html>
