@@ -1,89 +1,154 @@
 CREATE TABLE site (
-    site_id VARCHAR(30) PRIMARY KEY, -- Custom alphanumeric ID, e.g., 'CDR001'
+    site_id VARCHAR(30) PRIMARY KEY,
     site_name VARCHAR(255) NOT NULL,
     address TEXT NOT NULL,
     district VARCHAR(100),
-    geom GEOMETRY(Point, 4326);
+    latitude NUMERIC(9, 6),
+    longitude NUMERIC(9, 6),
+    geom GEOMETRY(Point, 4326),
 
-    -- Landowner details
+    site_type VARCHAR(50),
+    tower_type VARCHAR(50),
+    tower_height NUMERIC,
+    building_height NUMERIC,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID DEFAULT auth.uid(),
+    updated_by UUID
+);
+
+
+CREATE TABLE site_landowner (
+    site_id VARCHAR(30) PRIMARY KEY REFERENCES site(site_id) ON DELETE CASCADE,
     land_owner VARCHAR(255),
     land_owner_contact VARCHAR(30),
+    key_information VARCHAR(30)
+);
 
-    -- Guard details
-    guard_present BOOLEAN, -- Binary value for Yes/No
-    guard_contact VARCHAR(30),
+CREATE TABLE site_configuration (
+    site_id VARCHAR(30) PRIMARY KEY REFERENCES site(site_id) ON DELETE CASCADE,
+    band_2g VARCHAR(20),
+    band_3g VARCHAR(20),
+    band_4g VARCHAR(20),
+    config_5g VARCHAR(20),
+    config_2g VARCHAR(15),
+    config_3g VARCHAR(15),
+    config_4g VARCHAR(15)
+);
 
-    -- Site details
-    site_type VARCHAR(50) CHECK (site_type IN ('Indoor', 'Shelter', 'Outdoor_Cabinet')), -- Limited options
-    tower_type VARCHAR(50) CHECK (tower_type IN ('GBT', 'GBP', 'RTT')), -- Limited options
-    tower_height NUMERIC,
-
-    -- Location details
-    latitude NUMERIC(9, 6), -- Precision for latitude
-    longitude NUMERIC(9, 6),
-
-    -- Configurations for various technologies
-    config_2g VARCHAR(20) CHECK (config_2g IN ('900', '1800', '900+1800', 'NA')), -- Limited options
-    config_3g VARCHAR(20) CHECK (config_3g IN ('2100', 'NA')), -- Limited options
-    config_4g VARCHAR(20) CHECK (config_4g IN ('800', '800+1800', '1800', 'NA')), -- Limited options
-    config_5g VARCHAR(20), -- You can define further options if needed
-
-    -- Power details
-    tf VARCHAR(50) CHECK (tf IN ('NEA', 'NT', 'Solar')), -- Limited options
-    supply_phase VARCHAR(50) CHECK (supply_phase IN ('1-phase', '3-phase', 'NA')), -- Limited options
-    generator BOOLEAN, -- Binary value for Yes/No
+CREATE TABLE site_power (
+    site_id VARCHAR(30) PRIMARY KEY REFERENCES site(site_id) ON DELETE CASCADE,
+    tf VARCHAR(50),
+    supply_phase VARCHAR(50),
+    generator BOOLEAN,
+    kva_of_dg INT,
+    nea_subscriber_details VARCHAR(30),
+    meter_box_mcb_rating NUMERIC,
+    meter_power_rating NUMERIC,
+    power_plant_company VARCHAR(50),
+    modules_installed INT,
+    modules_operational INT,
     battery_banks NUMERIC,
     total_battery_capacity NUMERIC,
     battery_installation_date DATE,
+    battery_bank_company VARCHAR(50),
     rectifier_capacity NUMERIC,
-    load_current NUMERIC,
-    meter_power_rating NUMERIC,
+    load_current NUMERIC
+);
 
-    -- NEA details
+CREATE TABLE site_nea (
+    site_id VARCHAR(30) PRIMARY KEY REFERENCES site(site_id) ON DELETE CASCADE,
     nea_office VARCHAR(255),
     nea_office_contact VARCHAR(30),
     nea_field_person VARCHAR(255),
-    nea_field_contact VARCHAR(30),
+    nea_field_contact VARCHAR(30)
+);
 
-    -- Transmission details
-    transmission_link VARCHAR(50) CHECK (transmission_link IN ('Remote Optical', 'Optical', 'Radio', 'Optical+Radio', 'Remote Optical+Radio')), -- Limited options
-    transmission_device VARCHAR(50) CHECK (transmission_device IN ('L2', 'L3', 'NA')), -- Limited options
+CREATE TABLE site_transmission (
+    site_id VARCHAR(30) PRIMARY KEY REFERENCES site(site_id) ON DELETE CASCADE,
+    transmission_link VARCHAR(50),
+    transmission_device VARCHAR(50),
     transmission_l2 VARCHAR(255),
     transmission_l3 VARCHAR(255),
     l3_aggregation VARCHAR(255),
+    radio_parent VARCHAR(30),
+    microwave_type VARCHAR(50),
+    microwave_capacity INT,
+    microwave_antenna_size INT
+);
 
-    -- Image paths
+CREATE TABLE site_images (
+    site_id VARCHAR(30) PRIMARY KEY REFERENCES site(site_id) ON DELETE CASCADE,
     image1_path VARCHAR(255),
     image2_path VARCHAR(255),
-    image3_path VARCHAR(255),
-
-    -- Metadata
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    created_by UUID REFERENCES user_profiles(user_id) -- Foreign key to user_profiles.id (UUID)
-
+    image3_path VARCHAR(255)
 );
 
 
 
+
+
+
+-- Add FOREIGN KEY constraint for created_by
+ALTER TABLE site
+ADD CONSTRAINT fk_created_by_user
+FOREIGN KEY (created_by) REFERENCES public.user_profiles(user_id)
+ON DELETE SET NULL
+ON UPDATE CASCADE;
+
+-- Add FOREIGN KEY constraint for updated_by
+ALTER TABLE site
+ADD CONSTRAINT fk_updated_by_user
+FOREIGN KEY (updated_by) REFERENCES public.user_profiles(user_id)
+ON DELETE SET NULL -- If the user is deleted, set updated_by to NULL
+ON UPDATE CASCADE; -- If the user_id in user_profiles changes, update it here too
+
+-- Function to update geometry from latitude and longitude
 CREATE OR REPLACE FUNCTION update_sites_geom_from_latlon()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Check if latitude or longitude are provided and not NULL in the NEW row data
-  IF NEW.longitude IS NOT NULL AND NEW.latitude IS NOT NULL THEN
-    -- Calculate the geometry using PostGIS functions (Longitude first!)
-    NEW.geom = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
-  ELSE
-    -- If lat/lon are NULL, set geom to NULL
-    NEW.geom = NULL;
-  END IF;
-  -- Return the modified NEW row so the INSERT or UPDATE can proceed
+    IF NEW.longitude IS NOT NULL AND NEW.latitude IS NOT NULL THEN
+        NEW.geom = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
+    ELSE
+        NEW.geom = NULL;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically update geom column
+CREATE TRIGGER trigger_update_sites_geom
+BEFORE INSERT OR UPDATE ON site
+FOR EACH ROW
+WHEN (pg_trigger_depth() = 0)
+EXECUTE FUNCTION update_sites_geom_from_latlon();
+
+-- Function to automatically update the updated_at timestamp and updated_by user
+CREATE OR REPLACE FUNCTION trigger_update_metadata()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  NEW.updated_by = auth.uid(); -- Set the user who performed the update
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql; -- Specify the function language is PL/pgSQL
+$$ LANGUAGE plpgsql;
 
+-- Trigger to execute the metadata update function before an update operation
+CREATE TRIGGER set_metadata_trigger_site
+BEFORE UPDATE ON site
+FOR EACH ROW
+EXECUTE FUNCTION trigger_update_metadata(); -- Renamed from trigger_set_timestamp
 
-EXECUTE FUNCTION update_sites_geom_from_latlon(); -- Execute the function we created
+-- Spatial index for efficient querying on the geom column
+CREATE INDEX IF NOT EXISTS idx_sites_geom ON site USING GIST (geom);
 
+-- Optional: Index on created_by for faster lookups
+CREATE INDEX IF NOT EXISTS idx_sites_created_by ON site (created_by);
 
-CREATE INDEX IF NOT EXISTS idx_sites_geom ON sites USING GIST (geom);
+-- Optional: Index on updated_by for faster lookups
+CREATE INDEX IF NOT EXISTS idx_sites_updated_by ON site (updated_by);
+
+-- Note: The 'user_profiles' table and 'user_id' column are assumed.
+-- Ensure your 'public.user_profiles' table with 'user_id' (UUID) exists.
+-- If your user table is directly auth.users, adjust foreign keys to reference auth.users(id).

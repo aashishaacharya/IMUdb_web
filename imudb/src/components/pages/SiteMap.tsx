@@ -5,6 +5,8 @@ import PageLayout from '../layout/PageLayout';
 import 'leaflet/dist/leaflet.css';
 import '../../styles/SiteMap.css';
 import { Site } from '../../types/site';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../../lib/supabaseClient';
 
 // Simara Airport coordinates
 const SIMARA_AIRPORT_CENTER: LatLngTuple = [27.1591, 84.9809];
@@ -26,6 +28,26 @@ let DefaultIcon = new Icon({
   iconAnchor: [12, 41]
 });
 
+// Function to fetch sites for SiteMap
+const fetchSitesForSiteMap = async (): Promise<Site[]> => {
+  const { data, error } = await supabase
+    .from('site')
+    .select('site_id, site_name, latitude, longitude, site_type, tower_type'); // Fetch fields needed for popup and Site type
+    // Assuming site_type and tower_type are column names in your 'site' table for status and type
+
+  if (error) {
+    console.error('Error fetching sites for SiteMap:', error);
+    throw new Error(error.message);
+  }
+  return (data || []).map(item => ({
+    id: item.site_id,
+    name: item.site_name,
+    position: [item.latitude, item.longitude] as [number, number],
+    status: item.site_type, // Map to status if site_type is used for status
+    type: item.tower_type,   // Map to type if tower_type is used for type
+  })) as Site[];
+};
+
 interface MapControls {
   sites: {
     visible: boolean;
@@ -38,10 +60,21 @@ interface MapControls {
 }
 
 interface SiteMapProps {
-  sites?: Site[];
+  // sites prop removed as component will fetch its own data
 }
 
-const SiteMap: React.FC<SiteMapProps> = ({ sites = [] }) => {
+const SiteMap: React.FC<SiteMapProps> = (/*{ sites = [] }*/) => { // sites prop removed
+  const {
+    data: sites = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Site[], Error>({
+    queryKey: ['siteMapSites'],
+    queryFn: fetchSitesForSiteMap,
+    staleTime: 120000,
+  });
+
   const [mapControls, setMapControls] = useState<MapControls>({
     sites: { visible: true, selected: [] },
     fiber: { visible: false, selected: [] }
@@ -198,40 +231,44 @@ const SiteMap: React.FC<SiteMapProps> = ({ sites = [] }) => {
 
   return (
     <PageLayout title="Site Map" actions={mapActions}>
-      <div className="map-page-container">
-        <div className="map-container">
-          <MapContainer
-            center={SIMARA_AIRPORT_CENTER}
-            zoom={10}
-            minZoom={9}
-            maxZoom={19}
-            style={{ height: "100%", width: "100%" }}
-            zoomControl={true}
-            scrollWheelZoom={true}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            
-            {mapControls.sites.visible && sites.map((site) => (
-              mapControls.sites.selected.length === 0 || mapControls.sites.selected.includes(site.id.toString()) ? (
-                <Marker
-                  key={`marker-${site.id}`}
-                  position={site.position as LatLngTuple}
-                  icon={DefaultIcon}
-                >
-                  <Popup>
-                    <strong>{site.name}</strong><br />
-                    Status: {site.status}<br />
-                    Type: {site.type}
-                  </Popup>
-                </Marker>
-              ) : null
-            ))}
-          </MapContainer>
+      {isLoading && <p>Loading map data...</p>}
+      {isError && <p style={{ color: 'red' }}>Error fetching map data: {error?.message}</p>}
+      {!isLoading && !isError && (
+        <div className="map-page-container">
+          <div className="map-container">
+            <MapContainer
+              center={SIMARA_AIRPORT_CENTER}
+              zoom={10}
+              minZoom={9}
+              maxZoom={19}
+              style={{ height: "100%", width: "100%" }}
+              zoomControl={true}
+              scrollWheelZoom={true}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              {mapControls.sites.visible && sites.map((site) => (
+                mapControls.sites.selected.length === 0 || mapControls.sites.selected.includes(site.id.toString()) ? (
+                  <Marker
+                    key={`marker-${site.id}`}
+                    position={site.position as LatLngTuple}
+                    icon={DefaultIcon}
+                  >
+                    <Popup>
+                      <strong>{site.name}</strong><br />
+                      Status: {site.status || 'N/A'}<br />
+                      Type: {site.type || 'N/A'}
+                    </Popup>
+                  </Marker>
+                ) : null
+              ))}
+            </MapContainer>
+          </div>
         </div>
-      </div>
+      )}
     </PageLayout>
   );
 };

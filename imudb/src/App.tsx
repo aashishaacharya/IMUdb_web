@@ -9,6 +9,10 @@ import SiteManagement from './components/pages/SiteManagement';
 import SiteMap from './components/pages/SiteMap';
 import PageLayout from './components/layout/PageLayout';
 import RecentUpdates from './components/pages/RecentUpdates';
+import SiteDetailPage from './pages/SiteDetailPage';
+import AddSitePage from './pages/AddSitePage';
+import EditSitePage from './pages/EditSitePage';
+import PendingEditsPage from './pages/PendingEditsPage';
 import './App.css';
 
 // Placeholder components with proper mock content
@@ -74,72 +78,6 @@ const UserManagement = () => (
                 <div className="row-actions">
                   <button className="link">Edit</button>
                   <button className="link">Activate</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </PageLayout>
-);
-
-const PendingEdits = () => (
-  <PageLayout title="Pending Edits" actions={<button className="button">Approve All</button>}>
-    <div className="content-card">
-      <div className="table-responsive">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Edit ID</th>
-              <th>Site</th>
-              <th>Field</th>
-              <th>Current Value</th>
-              <th>Proposed Value</th>
-              <th>Requested By</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>EDIT-001</td>
-              <td>SITE-0101</td>
-              <td>Site Name</td>
-              <td>Birgunj Relay</td>
-              <td>Birgunj Central Relay</td>
-              <td>Tech A</td>
-              <td>
-                <div className="row-actions">
-                  <button className="link">Approve</button>
-                  <button className="link">Reject</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>EDIT-002</td>
-              <td>SITE-0099</td>
-              <td>Status</td>
-              <td>Inactive</td>
-              <td>Active</td>
-              <td>Admin</td>
-              <td>
-                <div className="row-actions">
-                  <button className="link">Approve</button>
-                  <button className="link">Reject</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>EDIT-003</td>
-              <td>SITE-0102</td>
-              <td>Equipment</td>
-              <td>3 items</td>
-              <td>5 items</td>
-              <td>Field Ops B</td>
-              <td>
-                <div className="row-actions">
-                  <button className="link">Approve</button>
-                  <button className="link">Reject</button>
                 </div>
               </td>
             </tr>
@@ -412,6 +350,13 @@ const App: React.FC = () => {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sites" element={<SiteManagement />} />
+        <Route path="/sites/new" element={
+          <RoleBasedRoute allowedRoles={['admin']}>
+            <AddSitePage />
+          </RoleBasedRoute>
+        } />
+        <Route path="/sites/:siteId" element={<SiteDetailPage />} />
+        <Route path="/sites/:siteId/edit" element={<EditSitePage />} />
         <Route path="/site-map" element={<SiteMap />} />
         <Route path="/optical-data" element={<OpticalData />} />
         <Route path="/recent-updates" element={<RecentUpdates />} />
@@ -431,7 +376,7 @@ const App: React.FC = () => {
         {/* Admin and Editor routes */}
         <Route path="/pending-edits" element={
           <RoleBasedRoute allowedRoles={['admin', 'editor']}>
-            <PendingEdits />
+            <PendingEditsPage />
           </RoleBasedRoute>
         } />
         <Route path="/export" element={

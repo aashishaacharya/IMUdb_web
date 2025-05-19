@@ -114,22 +114,22 @@ body {
 /* Top Bar Styling */
 .top-bar {
   background-color: var(--nt-text-light);
-  padding: var(--nt-topbar-padding-vertical) var(--nt-content-padding);
+  padding: 8px var(--nt-content-padding); /* Reduced from var(--nt-topbar-padding-vertical) */
   border-bottom: 1px solid #ddd;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-  position: fixed;  /* Changed to fixed */
-  top: 0;           /* Position at top */
-  left: var(--nt-sidebar-width); /* Position after sidebar */
-  width: calc(100% - var(--nt-sidebar-width)); /* Calculate width */
-  height: var(--nt-topbar-height); /* Set defined height */
+  position: fixed;
+  top: 0;
+  left: var(--nt-sidebar-width);
+  width: calc(100% - var(--nt-sidebar-width));
+  height: 50px; /* Reduced from var(--nt-topbar-height) */
   z-index: 15;
 }
 
 .top-bar h1 {
-  font-size: 1.5em;
+  font-size: 1.2em; /* Reduced from 1.5em */
   color: var(--nt-primary-dark);
   font-weight: 600;
 }
@@ -155,9 +155,9 @@ body {
 .dashboard-content {
   flex-grow: 1;
   overflow-y: auto;
-  padding: var(--nt-content-padding);
+  padding: 10px var(--nt-content-padding) var(--nt-content-padding) var(--nt-content-padding); /* Adjusted top padding */
   width: 100%;
-  max-width: 1600px; /* Increased from 1400px to make content larger */
+  max-width: 1600px;
   margin-left: auto;
   margin-right: auto;
 }

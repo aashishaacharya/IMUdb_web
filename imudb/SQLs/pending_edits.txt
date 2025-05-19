@@ -1,0 +1,31 @@
+CREATE TABLE pending_edits (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    target_table VARCHAR(255) NOT NULL, -- e.g., 'site', 'site_configuration'
+    target_record_id VARCHAR(255) NOT NULL, -- The PK of the record being edited (e.g., site_id)
+    
+    -- Stores the proposed JSON object of the changes.
+    -- For example: {"site_name": "New Site Name", "tower_height": 60}
+    proposed_changes JSONB NOT NULL, 
+    
+    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- Values: 'pending', 'approved', 'rejected'
+    
+    requested_by_user_id UUID REFERENCES auth.users(id), -- User who suggested the edit
+    requested_at TIMESTAMPTZ DEFAULT now(),
+    
+    reviewed_by_user_id UUID REFERENCES auth.users(id), -- Admin who reviewed the edit
+    reviewed_at TIMESTAMPTZ,
+    review_comments TEXT, -- Optional comments from the reviewer
+    site_name VARCHAR(30);
+
+
+    CONSTRAINT chk_status CHECK (status IN ('pending', 'approved', 'rejected'))
+);
+
+-- Indexes for better query performance
+CREATE INDEX idx_pending_edits_status ON pending_edits(status);
+CREATE INDEX idx_pending_edits_target ON pending_edits(target_table, target_record_id);
+CREATE INDEX idx_pending_edits_requested_by ON pending_edits(requested_by_user_id);
+
+-- Optional: Enable Row Level Security (RLS) if you haven't already for good practice
+-- You'll need to define policies later based on your app's logic.
+-- ALTER TABLE pending_edits ENABLE ROW LEVEL SECURITY; 
